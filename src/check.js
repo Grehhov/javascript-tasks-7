@@ -53,7 +53,7 @@ function prop(isNot) {
     } else if (Function.prototype === Object.getPrototypeOf(this)) {
         return {
             hasParamsCount: hasParamsCount.bind(this, isNot)
-        }
+        };
     }
 }
 
