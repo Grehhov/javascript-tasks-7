@@ -58,7 +58,7 @@ function prop(isNot) {
 }
 
 function containsKeys(isNot, keys) {
-    for(var key of keys) {
+    for (var key of keys) {
         if (!this.hasOwnProperty(key)) {
             return result(false, isNot);
         }
@@ -75,9 +75,9 @@ function hasKeys(isNot, keys) {
 }
 
 function containsValues(isNot, values) {
-    for(var value of values) {
+    for (var value of values) {
         var containsValue = false;
-        Object.keys(values).forEach(function(index) {
+        Object.keys(values).forEach(function (index) {
             if (value === values[index]) {
                 containsValue = true;
             }
@@ -91,7 +91,7 @@ function containsValues(isNot, values) {
 
 function hasValues(isNot, values) {
     var listOfValue = [];
-    Object.keys(values).forEach(function(index) {
+    Object.keys(values).forEach(function (index) {
         listOfValue.push(values[index]);
         if (values.indexOf(values[index]) === -1) {
             return result(false, isNot);
@@ -111,10 +111,10 @@ function hasValueType(isNot, key, type) {
         number: Number,
         function: Function,
         array: Array
-    }
-    for(var k in supportedTypes) {
+    };
+    for (var k in supportedTypes) {
         if (supportedTypes[k] === type) {
-            return result(typeof(key) === k, isNot);
+            return result(typeof (key) === k, isNot);
         }
     }
     return null;
