@@ -112,16 +112,12 @@ function hasValueType(isNot, key, type) {
 		function: Function,
 		array: Array
 	}
-	var supportedType = false;
 	for(var k in supportedTypes) {
 		if (supportedTypes[k] === type) {
-			supportedType = true;
 			return result(typeof(key) === k, isNot);
 		}
 	}
-	if (!(supportedType)) {
-		return null;
-	}
+	return null;
 }
 
 function hasLength(isNot, length) {
