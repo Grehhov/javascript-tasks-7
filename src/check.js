@@ -22,90 +22,100 @@ exports.wrap = function (obj) {
 
 function property() {
     var properties = {};
-    properties = prop.call(this, false);
-    properties.not = prop.call(this, true);
+    properties = prop.call(this);
+    properties.not = Object.keys(properties).reduce(function (prev, key) {
+        prev[key] = function () {
+            return !properties[key].apply(this, arguments);
+        };
+        return prev;
+    }, {});
     return properties;
 }
 
-function prop(isNot) {
+function prop() {
     if (Object.prototype === Object.getPrototypeOf(this)) {
         return {
-            containsKeys: containsKeys.bind(this, isNot),
-            hasKeys: hasKeys.bind(this, isNot),
-            containsValues: containsValues.bind(this, isNot),
-            hasValues: hasValues.bind(this, isNot),
-            hasValueType: hasValueType.bind(this, isNot)
+            containsKeys: containsKeys.bind(this),
+            hasKeys: hasKeys.bind(this),
+            containsValues: containsValues.bind(this),
+            hasValues: hasValues.bind(this),
+            hasValueType: hasValueType.bind(this)
         };
-    } else if (Array.prototype === Object.getPrototypeOf(this)) {
+    }
+    if (Array.prototype === Object.getPrototypeOf(this)) {
         return {
-            containsKeys: containsKeys.bind(this, isNot),
-            hasKeys: hasKeys.bind(this, isNot),
-            containsValues: containsValues.bind(this, isNot),
-            hasValues: hasValues.bind(this, isNot),
-            hasValueType: hasValueType.bind(this, isNot),
-            hasLength: hasLength.bind(this, isNot)
+            containsKeys: containsKeys.bind(this),
+            hasKeys: hasKeys.bind(this),
+            containsValues: containsValues.bind(this),
+            hasValues: hasValues.bind(this),
+            hasValueType: hasValueType.bind(this),
+            hasLength: hasLength.bind(this)
         };
-    } else if (String.prototype === Object.getPrototypeOf(this)) {
+    }
+    if (String.prototype === Object.getPrototypeOf(this)) {
         return {
-            hasLength: hasLength.bind(this, isNot),
-            hasWordsCount: hasWordsCount.bind(this, isNot)
+            hasLength: hasLength.bind(this),
+            hasWordsCount: hasWordsCount.bind(this)
         };
-    } else if (Function.prototype === Object.getPrototypeOf(this)) {
+    }
+    if (Function.prototype === Object.getPrototypeOf(this)) {
         return {
-            hasParamsCount: hasParamsCount.bind(this, isNot)
+            hasParamsCount: hasParamsCount.bind(this)
         };
     }
 }
 
-function containsKeys(isNot, keys) {
+function containsKeys(keys) {
     for (var key of keys) {
         if (!this.hasOwnProperty(key)) {
-            return result(false, isNot);
+            return false;
         }
     }
-    return result(true, isNot);
+    return true;
 }
 
-function hasKeys(isNot, keys) {
+function hasKeys(keys) {
     var pr = Object.keys(this);
     if (pr.length !== keys.length) {
-        return result(false, isNot);
+        return false;
     }
-    return result(this.check.containsKeys(keys), isNot);
+    return this.check.containsKeys(keys);
 }
 
-function containsValues(isNot, values) {
+function containsValues(values) {
+    var _this = this;
     for (var value of values) {
         var containsValue = false;
-        Object.keys(values).forEach(function (index) {
-            if (value === values[index]) {
+        Object.keys(_this).forEach(function (index) {
+            if (value === _this[index]) {
                 containsValue = true;
             }
         });
         if (!containsValue) {
-            return result(false, isNot);
+            return false;
         }
     }
-    return result(true, isNot);
+    return true;
 }
 
-function hasValues(isNot, values) {
+function hasValues(values) {
     var listOfValue = [];
-    Object.keys(values).forEach(function (index) {
-        listOfValue.push(values[index]);
-        if (values.indexOf(values[index]) === -1) {
-            return result(false, isNot);
+    var _this = this;
+    Object.keys(_this).forEach(function (index) {
+        listOfValue.push(_this[index]);
+        if (values.indexOf(_this[index]) === -1) {
+            return false;
         }
     });
     for (var value of values) {
         if (listOfValue.indexOf(value) === -1) {
-            return result(false, isNot);
+            return false;
         }
     }
-    return result(true, isNot);
+    return true;
 }
 
-function hasValueType(isNot, key, type) {
+function hasValueType(key, type) {
     var supportedTypes = {
         string: String,
         number: Number,
@@ -114,24 +124,20 @@ function hasValueType(isNot, key, type) {
     };
     for (var k in supportedTypes) {
         if (supportedTypes[k] === type) {
-            return result(typeof (key) === k, isNot);
+            return typeof (this[key]) === k;
         }
     }
     return null;
 }
 
-function hasLength(isNot, length) {
-    return result(this.length === length, isNot);
+function hasLength(length) {
+    return this.length === length;
 }
 
-function hasParamsCount(isNot, count) {
-    return result(this.length === count, isNot);
+function hasParamsCount(count) {
+    return this.length === count;
 }
 
-function hasWordsCount(isNot, count) {
-    return result(this.split(/\s+/).length === count, isNot);
-}
-
-function result(res, isNot) {
-    return isNot ? !res : res;
+function hasWordsCount(count) {
+    return this.split(/\s+/).length === count;
 }
