@@ -9,7 +9,7 @@ exports.init = function () {
 };
 
 exports.wrap = function (obj) {
-    if (obj !== null) {
+    if (obj !== null && obj !== undefined) {
         this.init();
         return obj;
     }
@@ -33,7 +33,8 @@ function property() {
 }
 
 function prop() {
-    if (Object.prototype === Object.getPrototypeOf(this)) {
+    var prototype = Object.getPrototypeOf(this);
+    if (Object.prototype === prototype) {
         return {
             containsKeys: containsKeys.bind(this),
             hasKeys: hasKeys.bind(this),
@@ -42,7 +43,7 @@ function prop() {
             hasValueType: hasValueType.bind(this)
         };
     }
-    if (Array.prototype === Object.getPrototypeOf(this)) {
+    if (Array.prototype === prototype) {
         return {
             containsKeys: containsKeys.bind(this),
             hasKeys: hasKeys.bind(this),
@@ -52,13 +53,13 @@ function prop() {
             hasLength: hasLength.bind(this)
         };
     }
-    if (String.prototype === Object.getPrototypeOf(this)) {
+    if (String.prototype === prototype) {
         return {
             hasLength: hasLength.bind(this),
             hasWordsCount: hasWordsCount.bind(this)
         };
     }
-    if (Function.prototype === Object.getPrototypeOf(this)) {
+    if (Function.prototype === prototype) {
         return {
             hasParamsCount: hasParamsCount.bind(this)
         };
@@ -75,22 +76,20 @@ function containsKeys(keys) {
 }
 
 function hasKeys(keys) {
-    var pr = Object.keys(this);
-    if (pr.length !== keys.length) {
+    if (Object.keys(this).length !== keys.length) {
         return false;
     }
     return this.check.containsKeys(keys);
 }
 
 function containsValues(values) {
-    var _this = this;
     for (var value of values) {
         var containsValue = false;
-        Object.keys(_this).forEach(function (index) {
-            if (value === _this[index]) {
+        Object.keys(this).forEach(function (index) {
+            if (value === this[index]) {
                 containsValue = true;
             }
-        });
+        }.bind(this));
         if (!containsValue) {
             return false;
         }
@@ -100,13 +99,16 @@ function containsValues(values) {
 
 function hasValues(values) {
     var listOfValue = [];
-    var _this = this;
-    Object.keys(_this).forEach(function (index) {
-        listOfValue.push(_this[index]);
-        if (values.indexOf(_this[index]) === -1) {
-            return false;
+    var hasValue = true;
+    Object.keys(this).forEach(function (index) {
+        listOfValue.push(this[index]);
+        if (values.indexOf(this[index]) === -1) {
+            hasValue = false;
         }
-    });
+    }.bind(this));
+    if (!hasValue) {
+        return false;
+    }
     for (var value of values) {
         if (listOfValue.indexOf(value) === -1) {
             return false;
@@ -122,9 +124,9 @@ function hasValueType(key, type) {
         function: Function,
         array: Array
     };
-    for (var k in supportedTypes) {
-        if (supportedTypes[k] === type) {
-            return typeof (this[key]) === k;
+    for (var t in supportedTypes) {
+        if (supportedTypes[t] === type) {
+            return typeof (this[key]) === t;
         }
     }
     return null;
